@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Single-Spark (TP=1) launcher for Inkling-2-Mini EXLR8 + Melded DFlash2.
-# Works inside ghcr.io/kindlingai/gr8:main (/opt/gr8) or a bare-metal gr8 checkout.
+# Single-Spark (TP=1) launcher for Inkling-2-Mini EXLR8 + DFlash.
+# Works inside ghcr.io/kindlingai/gr8 (/opt/gr8) or a bare-metal gr8 checkout.
 
 ENGINE_ROOT="${ENGINE_ROOT:-${GR8_ROOT:-/opt/gr8}}"
 G6M4="${G6M4:-$ENGINE_ROOT/bin/g6m4_ink2}"
@@ -65,7 +65,7 @@ ENG_ARGS=(
 )
 [ "$REUSE_PREFIX" = "1" ] && ENG_ARGS+=(--reuse-prefix)
 
-# Zero GR8_INK2_DFLASH2 flag needed: g6m4_ink2 auto-discovers dflash2-melded.safetensors in MODEL_DIR.
+# Zero extra DFlash flag needed: g6m4_ink2 auto-discovers the bundled DFlash drafter in MODEL_DIR.
 "$G6M4" "${ENG_ARGS[@]}" &
 ENG_PID=$!
 
