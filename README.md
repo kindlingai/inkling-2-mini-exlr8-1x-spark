@@ -18,7 +18,7 @@ hf download kindlingai/inkling-2-mini-exlr8-k2-k3-k4 \
   --local-dir ./models/inkling-2-mini-exlr8-k2-k3-k4
 ```
 
-2. Configure and launch (default `VARIANT=k4`, OpenAI API on port `8100`):
+2. Configure and launch (default `VARIANT=k4`, `CAP=262144`, `SESSIONS=4` — `1M` total KV pool, OpenAI API on port `8100`):
 
 ```bash
 cp .env.example .env
@@ -46,7 +46,7 @@ git clone https://github.com/kindlingai/gr8.git
 cd gr8
 GR8_WIDTHS=1 MODEL=ink2 scripts/build.sh out/bin
 # Run with any preset: VARIANT=k4 | bit325 | bit250 | k2
-GR8_ROOT=$PWD G6M4=$PWD/out/bin/g6m4_ink2 \
+ENGINE_ROOT=$PWD G6M4=$PWD/out/bin/g6m4_ink2 \
   MODEL_DIR=/path/to/inkling-2-mini-exlr8-k2-k3-k4 \
   VARIANT=k4 bash /path/to/serve.sh
 ```
@@ -70,7 +70,11 @@ GR8_S2_ADAPT=1
 GR8_INK2_S2_COST=14.0,2.5,2.0,0.4,0.0,0.0
 ```
 
-For `128K` single-stream context, set `CAP=139264` in `.env` (`3,472 tok/s` at 8K, `3,150 tok/s` at 32K, `2,732 tok/s` at 64K, `2,162 tok/s` at 128K on `bit325`).
+The default configuration maximizes context on a 128 GB DGX Spark with a **`1,048,576`-token (`1M`) total KV pool** (`CAP=262144`, `SESSIONS=4` — `256K` context per session, keeping `~12 GiB` free OS headroom alongside `k4` + `23.49 GiB` cached MXFP8 prefill MoE):
+- Verified live via `docker compose up -d` (`ghcr.io/kindlingai/gr8:main`): ready in `10.3s`, `36.6K`-token needle recall **PASS** (`3,068 tok/s`), `146.4K`-token needle recall **PASS** (`2,089 tok/s`, `12.2 GiB` free OS memory after run).
+- For 8-user concurrency (`128K`/session × 8 = `1M` total KV pool, `~11.6 GiB` free), set `CAP=131072` and `SESSIONS=8` in `.env`.
+- For full **`1M` (`1,048,576`) native single-stream context**, set `CAP=1048576` and `SESSIONS=1` in `.env` (boots in `10.5s`, `~7.8 GiB` free).
+- For lower memory footprint when co-hosting other workloads, lower `CAP`/`SESSIONS` or set `GR8_INK2_PF_MX8_MOE=0` (frees `23.5 GiB`).
 
 ---
 

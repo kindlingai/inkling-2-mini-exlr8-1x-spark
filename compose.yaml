@@ -1,8 +1,8 @@
-# Inkling-2-Mini EXLR8 + Melded DFlash2 on one NVIDIA DGX Spark (GB10)
+# Inkling-2-Mini EXLR8 + Melded DFlash2 on one NVIDIA DGX Spark (GB10, 128 GB)
 # Serves an OpenAI-compatible API on http://127.0.0.1:${PORT:-8100}/v1
 #
 #   cp .env.example .env
-#   huggingface-cli download kindlingai/inkling-2-mini-exlr8-k2-k3-k4 \
+#   hf download kindlingai/inkling-2-mini-exlr8-k2-k3-k4 \
 #     --local-dir ./models/inkling-2-mini-exlr8-k2-k3-k4
 #   docker compose up -d
 #   docker compose logs -f
@@ -10,7 +10,7 @@
 name: inkling-2-mini-1x-spark
 services:
   gr8:
-    image: ${GR8_IMAGE:-ghcr.io/kindlingai/gr8:main}
+    image: ${IMAGE:-ghcr.io/kindlingai/gr8:main}
     container_name: inkling-2-mini-1x-spark
     entrypoint: ["/bin/bash", "/recipe/serve.sh"]
     env_file:
@@ -19,8 +19,14 @@ services:
     environment:
       - MODEL_DIR=/models/inkling-2-mini-exlr8-k2-k3-k4
       - WORK_DIR=/tmp/ink2-gr8
-      - GR8_ROOT=/opt/gr8
+      - ENGINE_ROOT=/opt/gr8
       - PY=/usr/bin/python3
+      - CAP=${CAP:-262144}
+      - SESSIONS=${SESSIONS:-4}
+      - VARIANT=${VARIANT:-k4}
+      - MTP=${MTP:-7}
+      - PREFILL=${PREFILL:-4096}
+      - PORT=${PORT:-8100}
     network_mode: host
     pid: host
     deploy:
